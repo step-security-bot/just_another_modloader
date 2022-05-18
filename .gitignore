@@ -3,7 +3,7 @@
 deprecated/
 *.bak
 *.txt
-*.dll
+addons/test/test.dll
 
 # Added by cargo
 #
