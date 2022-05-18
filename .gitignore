@@ -3,6 +3,7 @@
 deprecated/
 *.bak
 *.txt
+*.dll
 
 # Added by cargo
 #
