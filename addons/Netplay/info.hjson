@@ -1,0 +1,11 @@
+{
+    name: Netplay patch
+    description: Increases possible delay
+    update: reserved
+    version: 1.0.0
+    source: reserved
+    main: original_Netplay.dll
+    events: {
+        onInitializatiom: Initialize
+    }
+}

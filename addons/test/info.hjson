@@ -1,0 +1,13 @@
+{
+    name: test
+    description: test
+    update: reserved
+    version: alpha
+    source: reserved
+    main: test.dll
+    events: {
+        onGameStarted: onGameStarted
+        onHosted: onHosted
+        onConnection: onConnection
+    }
+}

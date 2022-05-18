@@ -1,0 +1,12 @@
+.vscode/
+*.code-workspace
+deprecated/
+*.bak
+*.txt
+
+# Added by cargo
+#
+# already existing elements were commented out
+
+/target
+/Cargo.lock
