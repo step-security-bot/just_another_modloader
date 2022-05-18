@@ -12,7 +12,7 @@ panic = "abort"
 opt-level = "z"
 
 [lib]
-crate-type = [ "cdylib", "rlib", "staticlib" ]
+crate-type = [ "cdylib" ]
 
 [dependencies]
 deser-hjson = "*"
