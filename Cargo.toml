@@ -16,5 +16,6 @@ crate-type = [ "cdylib" ]
 
 [dependencies]
 deser-hjson = "*"
+lazy_static = "*"
 serde = "*"
 winapi = { version = "*", features = [ "consoleapi", "minwindef", "winuser", "windef", "libloaderapi" ] }

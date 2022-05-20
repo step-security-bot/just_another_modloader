@@ -1,6 +1,8 @@
 #![ cfg( windows ) ]
 
 use {
+    lazy_static::lazy_static,
+
     deser_hjson,
 
     serde::Deserialize,
@@ -15,17 +17,17 @@ use {
         },
 
         thread,
+
+        sync::{
+            Mutex,
+        },
     },
 
     winapi::{
         shared::{
-            minwindef::{ // UINT
+            minwindef::{
                 TRUE, BOOL, DWORD, HINSTANCE, HMODULE, LPVOID, FARPROC
             },
-
-            // windef::{
-            //     HWND
-            // },
 
             ntdef::{
                 NULL, LPCSTR
@@ -33,10 +35,6 @@ use {
         },
 
         um::{
-            // winuser::{
-            //     MessageBoxA
-            // },
-
             consoleapi::{
                 AllocConsole
             },
@@ -48,7 +46,7 @@ use {
     },
 };
 
-#[ derive( Default, Deserialize, PartialEq, Debug ) ]
+#[ derive( Clone, Default, Deserialize, PartialEq, Debug ) ]
 struct ModInfo {
     name       : String,
     description: Option< String >,
@@ -59,14 +57,18 @@ struct ModInfo {
     events     : HashMap< String, Option< String > >,
 }
 
-static mut ON_INITIALIZATION: Vec< FARPROC > = Vec::new();
-
-static mut NETPLAY_INITIALIZATION_ADDRESS: FARPROC = NULL as FARPROC;
-
 macro_rules! v_address_to_function {
     ( $address:expr, $t:ty ) => {
         std::mem::transmute::< *const (), $t >( $address as _ )
     };
+}
+
+// static mut ON_INITIALIZATION: Vec< FARPROC > = Vec::new();
+static mut NETPLAY_INITIALIZATION_ADDRESS: FARPROC = NULL as FARPROC;
+
+lazy_static! {
+    #[ derive( Debug ) ]
+    static ref ON_EVENT_FUNCTIONS: Mutex< HashMap< String, Vec< usize > > > = Mutex::new( HashMap::new() );
 }
 
 /// Rust doesn't officially support a "life before main()",
@@ -92,9 +94,6 @@ unsafe extern "system" fn DllMain(
 
 #[ no_mangle ]
 pub unsafe extern fn thcrap_plugin_init() -> u32 {
-    // AllocConsole();
-    println!( "Hello from thcrap!" );
-
     // init();
 
     0
@@ -110,30 +109,20 @@ unsafe fn init() {
 
 #[ no_mangle ]
 pub unsafe extern fn Initialize() {
-    // const WINDOW_TEXT: LPCSTR = "world!\0".as_ptr() as LPCSTR;
-    // const WINDOW_NAME: LPCSTR = "Hello!\0".as_ptr() as LPCSTR;
-
-    // MessageBoxA(
-    //     NULL as HWND,
-    //     WINDOW_TEXT,
-    //     WINDOW_NAME,
-    //     NULL as UINT
-    // );
-
-    // let first_player_health: *const u32 = 0x3F77BED8 as *const u32;
-
-    // println!( *first_player_health );
-
-    ( &ON_INITIALIZATION ).into_iter().for_each(
-        | function_address | {
+    println!(
+        "onInitialization: {:#?}",
+        ON_EVENT_FUNCTIONS.lock().unwrap().get( "onInitialization" )
+    );
+    if let Some( on_initialization_events ) = ON_EVENT_FUNCTIONS.lock().unwrap().get( "onInitialization" ) {
+        for &function_address in on_initialization_events.iter() {
             let on_initialization_function = v_address_to_function!(
-                *function_address,
+                function_address,
                 extern "C" fn()
             );
     
             on_initialization_function();
         }
-    );
+    }
 
     if NETPLAY_INITIALIZATION_ADDRESS != NULL as FARPROC {
         let netplay_initialization = v_address_to_function!(
@@ -161,6 +150,7 @@ unsafe fn load_root_directory() {
         )
         .filter(
             | path | {
+                // exclude mod loader dll
                 if path.path().to_str().unwrap() == "./Netplay.dll" {
                     return false;
                 }
@@ -200,10 +190,6 @@ unsafe fn load_root_directory() {
 }
 
 unsafe fn load_addons_directory() {
-    let mut on_game_started_events: Vec< usize > = Vec::new();
-    let mut on_hosted_events      : Vec< usize > = Vec::new();
-    let mut on_connection_events  : Vec< usize > = Vec::new();
-
     let addons_paths: Vec< fs::DirEntry > = match fs::read_dir( "addons" ) {
         Ok( directory ) => {
             directory
@@ -248,40 +234,20 @@ unsafe fn load_addons_directory() {
                 ).unwrap_or_default()
             ).unwrap_or_default();
 
-            println!(
-                "name       : {},",
-                &mod_info.name
-            );
+            // println!(
+            //     "name       : {},",
+            //     mod_info.name
+            // );
             
-            println!(
-                "description: {},",
-                &mod_info.description.unwrap_or_default()
-            );
+            // println!(
+            //     "description: {},",
+            //     mod_info.description.unwrap_or_default()
+            // );
 
-            println!(
-                "update     : {},",
-                &mod_info.update.unwrap_or_default()
-            );
-
-            println!(
-                "version    : {},",
-                &mod_info.version.unwrap_or_default()
-            );
-
-            println!(
-                "source     : {},",
-                &mod_info.source.unwrap_or_default()
-            );
-
-            println!(
-                "main       : {},",
-                &mod_info.main
-            );
-
-            println!(
-                "events     : {:?}",
-                &mod_info.events
-            );
+            // println!(
+            //     "version    : {},",
+            //     mod_info.version.unwrap_or_default()
+            // );
 
             let mod_h_module: HMODULE = LoadLibraryA(
                 format!(
@@ -296,60 +262,44 @@ unsafe fn load_addons_directory() {
                 String::from( "Not specified" )
             );
 
-            let event = mod_info.events.get( "onInitializatiom" )
-            .unwrap_or(
-                &not_specified
-            );
+            for ( event_name, event ) in mod_info.events.iter() {
+                if event != &not_specified {
+                    if let Some( on_event_old_functions ) = ON_EVENT_FUNCTIONS.lock().unwrap().insert(
+                        String::from( event_name ),
+                        vec![
+                            GetProcAddress(
+                                mod_h_module,
+                                format!(
+                                    "{}\0",
+                                    event.as_ref().unwrap()
+                                ).as_ptr() as LPCSTR
+                            ) as usize
+                        ]
+                    ) {
+                        let mut events = on_event_old_functions.clone();
 
-            if event != &not_specified {
-                ON_INITIALIZATION.push(
-                    GetProcAddress(
-                        mod_h_module,
-                        format!( "{}\0", event.as_ref().unwrap() ).as_ptr() as LPCSTR
-                    ) as FARPROC
-                );
-            }
+                        events.push(
+                            GetProcAddress(
+                                mod_h_module,
+                                format!(
+                                    "{}\0",
+                                    event.as_ref().unwrap()
+                                ).as_ptr() as LPCSTR
+                            ) as usize
+                        );
 
-            let event = mod_info.events.get( "onGameStarted" )
-            .unwrap_or(
-                &not_specified
-            );
+                        ON_EVENT_FUNCTIONS.lock().unwrap().insert(
+                            String::from( event_name ),
+                            events
+                        );
+                    }
 
-            if event != &not_specified {
-                on_game_started_events.push(
-                    GetProcAddress(
-                        mod_h_module,
-                        format!( "{}\0", event.as_ref().unwrap() ).as_ptr() as LPCSTR
-                    ) as usize
-                );
-            }
-
-            let event = mod_info.events.get( "onHosted" )
-            .unwrap_or(
-                &not_specified
-            );
-
-            if event != &not_specified {
-                on_hosted_events.push(
-                    GetProcAddress(
-                        mod_h_module,
-                        format!( "{}\0", event.as_ref().unwrap() ).as_ptr() as LPCSTR
-                    ) as usize
-                );
-            }
-
-            let event = mod_info.events.get( "onConnection" )
-            .unwrap_or(
-                &not_specified
-            );
-
-            if event != &not_specified {
-                on_connection_events.push(
-                    GetProcAddress(
-                        mod_h_module,
-                        format!( "{}\0", event.as_ref().unwrap() ).as_ptr() as LPCSTR
-                    ) as usize
-                );
+                    println!(
+                        "{}: {:#?}\n",
+                        String::from( event_name ),
+                        ON_EVENT_FUNCTIONS.lock().unwrap().get( event_name )
+                    );
+                }
             }
         }
     );
@@ -361,50 +311,64 @@ unsafe fn load_addons_directory() {
         .as_ptr() as LPCSTR
     ) as HMODULE;
 
-    let on_game_started_function = v_address_to_function!(
-        GetProcAddress(
-            states_h_module,
-            "onGameStarted\0".as_ptr() as LPCSTR
-        ) as FARPROC,
-        extern "C" fn( usize, Vec::< usize > )
+    let mut on_event_functions: HashMap< String, extern "C" fn( usize, Vec< usize > ) > = HashMap::new();
+
+    on_event_functions.insert(
+        String::from( "onGameStarted" ),
+        v_address_to_function!(
+            GetProcAddress(
+                states_h_module,
+                "onGameStarted\0".as_ptr() as LPCSTR
+            ) as FARPROC,
+            extern "C" fn( usize, Vec::< usize > )
+        )
     );
 
-    let on_hosted_function = v_address_to_function!(
-        GetProcAddress(
-            states_h_module,
-            "onHosted\0".as_ptr() as LPCSTR
-        ) as FARPROC,
-        extern "C" fn( usize, Vec::< usize > )
+    on_event_functions.insert(
+        String::from( "onHosted" ),
+        v_address_to_function!(
+            GetProcAddress(
+                states_h_module,
+                "onHosted\0".as_ptr() as LPCSTR
+            ) as FARPROC,
+            extern "C" fn( usize, Vec::< usize > )
+        )
     );
 
-    let on_connection_function = v_address_to_function!(
-        GetProcAddress(
-            states_h_module,
-            "onConnection\0".as_ptr() as LPCSTR
-        ) as FARPROC,
-        extern "C" fn( usize, Vec::< usize > )
-    );
-
-    println!(
-        "started  : {} -> {:#02X?}",
-        on_game_started_events.len(), on_game_started_events
-    );
-
-    println!(
-        "hosted    : {} -> {:#02X?}",
-        on_hosted_events.len(), on_hosted_events
-    );
-
-    println!(
-        "connection: {} -> {:#02X?}",
-        on_connection_events.len(), on_connection_events
+    on_event_functions.insert(
+        String::from( "onConnection" ),
+        v_address_to_function!(
+            GetProcAddress(
+                states_h_module,
+                "onConnection\0".as_ptr() as LPCSTR
+            ) as FARPROC,
+            extern "C" fn( usize, Vec::< usize > )
+        )
     );
 
     thread::spawn(
         move || {
-            on_game_started_function( on_game_started_events.len(), on_game_started_events );
-            on_hosted_function( on_hosted_events.len(), on_hosted_events );
-            on_connection_function( on_connection_events.len(), on_connection_events );
+            for ( event_name, function_addresses ) in ON_EVENT_FUNCTIONS.lock().unwrap().iter() {
+                if event_name != "onInitialization" {
+                    println!(
+                        "{} : {} -> {:#02X?}",
+                        event_name,
+                        function_addresses
+                            .len(),
+                        function_addresses
+                            .to_owned()
+                    );
+
+                    if let Some( on_event_function ) = on_event_functions.get( event_name ) {
+                        on_event_function(
+                            function_addresses
+                                .len(),
+                            function_addresses
+                                .to_owned()
+                        );
+                    }
+                }
+            }
         }
     );
 }

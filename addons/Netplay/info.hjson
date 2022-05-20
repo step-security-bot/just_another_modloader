@@ -6,6 +6,6 @@
     source: reserved
     main: original_Netplay.dll
     events: {
-        onInitializatiom: Initialize
+        onInitialization: Initialize
     }
 }
