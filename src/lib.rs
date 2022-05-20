@@ -100,7 +100,10 @@ pub unsafe extern fn thcrap_plugin_init() -> u32 {
 }
 
 unsafe fn init() {
-    AllocConsole();
+    if cfg!( debug_assertions ) {
+        AllocConsole();
+    }
+
     println!( "Hello from demo_init()!" );
 
     load_root_directory();
