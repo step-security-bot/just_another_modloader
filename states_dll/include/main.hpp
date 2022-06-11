@@ -29,6 +29,13 @@
 #define RemoveHook( _originalFunction, _hookedFunction, _functionName )\
     RegisterHook( _originalFunction, _hookedFunction, _functionName )
 
+typedef void modFunction_t( void );
+
+extern size_t     onHostedFunctionCount;
+extern uintptr_t* onHostedfunctionAddresses;
+extern size_t     onConnectionFunctionCount;
+extern uintptr_t* onConnectionfunctionAddresses;
+
 struct struct0 {
     int32_t port;
     char    pad1[ 4 ];

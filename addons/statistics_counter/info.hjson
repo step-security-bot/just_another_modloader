@@ -1,0 +1,11 @@
+{
+    name: Statistics counter
+    description: Win / Lose counter
+    update: reserved
+    version: 0.1.0
+    source: reserved
+    main: counter.dll
+    events: {
+        onGameStarted: onGameStarted
+    }
+}

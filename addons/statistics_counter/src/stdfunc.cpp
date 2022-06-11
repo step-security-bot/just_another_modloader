@@ -6,7 +6,7 @@
 #ifndef _WIN32
 #include <stdio.h>
 #endif
-#include <stdfunc.hpp>
+#include "stdfunc.hpp"
 
 ///////////////
 /// @brief Function that find length of an integer number.

@@ -1,5 +1,7 @@
 #![ cfg( windows ) ]
 
+use std::println;
+
 use {
     lazy_static::lazy_static,
 
@@ -267,7 +269,7 @@ unsafe fn load_addons_directory() {
 
             for ( event_name, event ) in mod_info.events.iter() {
                 if event != &not_specified {
-                    if let Some( on_event_old_functions ) = ON_EVENT_FUNCTIONS.lock().unwrap().insert(
+                    let on_event_old_functions = ON_EVENT_FUNCTIONS.lock().unwrap().insert(
                         String::from( event_name ),
                         vec![
                             GetProcAddress(
@@ -278,7 +280,9 @@ unsafe fn load_addons_directory() {
                                 ).as_ptr() as LPCSTR
                             ) as usize
                         ]
-                    ) {
+                    );
+
+                    if let Some( on_event_old_functions ) = on_event_old_functions {
                         let mut events = on_event_old_functions.clone();
 
                         events.push(
@@ -314,7 +318,7 @@ unsafe fn load_addons_directory() {
         .as_ptr() as LPCSTR
     ) as HMODULE;
 
-    let mut on_event_functions: HashMap< String, extern "C" fn( usize, Vec< usize > ) > = HashMap::new();
+    let mut on_event_functions: HashMap< String, extern "C" fn( usize, *const usize ) > = HashMap::new();
 
     on_event_functions.insert(
         String::from( "onGameStarted" ),
@@ -323,7 +327,7 @@ unsafe fn load_addons_directory() {
                 states_h_module,
                 "onGameStarted\0".as_ptr() as LPCSTR
             ) as FARPROC,
-            extern "C" fn( usize, Vec::< usize > )
+            extern "C" fn( usize, *const usize )
         )
     );
 
@@ -334,7 +338,7 @@ unsafe fn load_addons_directory() {
                 states_h_module,
                 "onHosted\0".as_ptr() as LPCSTR
             ) as FARPROC,
-            extern "C" fn( usize, Vec::< usize > )
+            extern "C" fn( usize, *const usize )
         )
     );
 
@@ -345,7 +349,7 @@ unsafe fn load_addons_directory() {
                 states_h_module,
                 "onConnection\0".as_ptr() as LPCSTR
             ) as FARPROC,
-            extern "C" fn( usize, Vec::< usize > )
+            extern "C" fn( usize, *const usize )
         )
     );
 
@@ -367,7 +371,7 @@ unsafe fn load_addons_directory() {
                             function_addresses
                                 .len(),
                             function_addresses
-                                .to_owned()
+                                .to_owned().as_ptr()
                         );
                     }
                 }
