@@ -8,8 +8,6 @@
 
 #include <string>
 
-#include <mingw-std-threads/mingw.thread.h>
-#include <stdfunc.hpp>
 #include <main.hpp>
 
 namespace hook {

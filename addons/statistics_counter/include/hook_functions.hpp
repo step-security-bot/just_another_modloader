@@ -10,8 +10,10 @@
 
 #include <main.hpp>
 
-namespace original {
+namespace hook {
 
-extern void ( __cdecl* portFunction )( struct struct0* _argument );
+int32_t fun_1160f70( struct s0* ecx, int32_t a2, struct s4* a3 );
+
+void portFunction( void );
 
 }

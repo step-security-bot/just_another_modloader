@@ -24,6 +24,24 @@
 ///////////////
 #define Pass (void*)0
 
+#define RegisterHook( _originalFunction, _hookedFunction, _functionName )\
+    DetourTransactionBegin();\
+    DetourUpdateThread( GetCurrentThread() );\
+    DetourAttach(\
+        &_originalFunction,\
+        &_hookedFunction\
+    );\
+    ( (\
+        DetourTransactionCommit() != NO_ERROR\
+    ) ? (\
+        printf( "\nError {}\n", _functionName )\
+    ) : (\
+        printf( "\nHooked: {}\n", _functionName )\
+    ) );
+
+#define RemoveHook( _originalFunction, _hookedFunction, _functionName )\
+    RegisterHook( _originalFunction, _hookedFunction, _functionName )
+
 ///////////////
 /// @brief Inline function that converts \c bool to string.
 /// @param[in] _boolean Boolean value to convert to string.

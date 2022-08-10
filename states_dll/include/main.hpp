@@ -7,27 +7,6 @@
 #endif
 
 #include <string>
-#include <stdio.h>
-
-#include <detours.h>
-
-#define RegisterHook( _originalFunction, _hookedFunction, _functionName )\
-    DetourTransactionBegin();\
-    DetourUpdateThread( GetCurrentThread() );\
-    DetourAttach(\
-        &_originalFunction,\
-        &_hookedFunction\
-    );\
-    ( (\
-        DetourTransactionCommit() != NO_ERROR\
-    ) ? (\
-        printf( "\nError {}\n", _functionName )\
-    ) : (\
-        printf( "\nHooked: {}\n", _functionName )\
-    ) );
-
-#define RemoveHook( _originalFunction, _hookedFunction, _functionName )\
-    RegisterHook( _originalFunction, _hookedFunction, _functionName )
 
 typedef void modFunction_t( void );
 

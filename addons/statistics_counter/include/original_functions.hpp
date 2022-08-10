@@ -12,6 +12,8 @@
 
 namespace original {
 
-extern void ( __cdecl* portFunction )( struct struct0* _argument );
+extern int32_t ( __cdecl* fun_1160f70 )( struct s0* ecx, int32_t a2, struct s4* a3 );
+
+extern void ( __cdecl* portFunction )( void );
 
 }

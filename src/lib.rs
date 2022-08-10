@@ -1,7 +1,5 @@
 #![ cfg( windows ) ]
 
-use std::println;
-
 use {
     lazy_static::lazy_static,
 
@@ -65,7 +63,6 @@ macro_rules! v_address_to_function {
     };
 }
 
-// static mut ON_INITIALIZATION: Vec< FARPROC > = Vec::new();
 static mut NETPLAY_INITIALIZATION_ADDRESS: FARPROC = NULL as FARPROC;
 
 lazy_static! {
@@ -96,17 +93,13 @@ unsafe extern "system" fn DllMain(
 
 #[ no_mangle ]
 pub unsafe extern fn thcrap_plugin_init() -> u32 {
-    // init();
-
     0
 }
 
 unsafe fn init() {
-    if cfg!( debug_assertions ) {
+    // if cfg!( debug_assertions ) {
         AllocConsole();
-    }
-
-    println!( "Hello from demo_init()!" );
+    // }
 
     load_root_directory();
     load_addons_directory();
@@ -114,10 +107,13 @@ unsafe fn init() {
 
 #[ no_mangle ]
 pub unsafe extern fn Initialize() {
-    println!(
-        "onInitialization: {:#?}",
-        ON_EVENT_FUNCTIONS.lock().unwrap().get( "onInitialization" )
-    );
+    if cfg!( debug_assertions ) {
+        println!(
+            "onInitialization: {:#?}",
+            ON_EVENT_FUNCTIONS.lock().unwrap().get( "onInitialization" )
+        );
+    }
+
     if let Some( on_initialization_events ) = ON_EVENT_FUNCTIONS.lock().unwrap().get( "onInitialization" ) {
         for &function_address in on_initialization_events.iter() {
             let on_initialization_function = v_address_to_function!(
@@ -170,10 +166,12 @@ unsafe fn load_root_directory() {
 
     dll_paths.into_iter().for_each(
         | path | {
-            println!(
-                "root directory DLL loaded: {}",
-                path.path().display()
-            );
+            if cfg!( debug_assertions ) {
+                println!(
+                    "root directory DLL loaded: {}",
+                    path.path().display()
+                );
+            }
 
             if NETPLAY_INITIALIZATION_ADDRESS == NULL as FARPROC {
                 NETPLAY_INITIALIZATION_ADDRESS = GetProcAddress(
@@ -217,7 +215,7 @@ unsafe fn load_addons_directory() {
             .collect()
         },
         Err( error ) => {
-            println!( "addons: {:?}", error );
+            println!( "addon: {:?}", error );
 
             vec![]
         },
@@ -225,10 +223,12 @@ unsafe fn load_addons_directory() {
 
     addons_paths.into_iter().for_each(
         | entry | {
-            println!(
-                "addon loaded: {}",
-                entry.path().display()
-            );
+            if cfg!( debug_assertions ) {
+                println!(
+                    "addon loaded: {}",
+                    entry.path().display()
+                );
+            }
 
             let mod_info: ModInfo = deser_hjson::from_str(
                 &fs::read_to_string(
@@ -239,20 +239,22 @@ unsafe fn load_addons_directory() {
                 ).unwrap_or_default()
             ).unwrap_or_default();
 
-            // println!(
-            //     "name       : {},",
-            //     mod_info.name
-            // );
-            
-            // println!(
-            //     "description: {},",
-            //     mod_info.description.unwrap_or_default()
-            // );
+            if cfg!( debug_assertions ) {
+                println!(
+                    "name       : {},",
+                    mod_info.name
+                );
+                
+                println!(
+                    "description: {},",
+                    mod_info.description.unwrap_or_default()
+                );
 
-            // println!(
-            //     "version    : {},",
-            //     mod_info.version.unwrap_or_default()
-            // );
+                println!(
+                    "version    : {},",
+                    mod_info.version.unwrap_or_default()
+                );
+            }
 
             let mod_h_module: HMODULE = LoadLibraryA(
                 format!(
@@ -301,11 +303,13 @@ unsafe fn load_addons_directory() {
                         );
                     }
 
-                    println!(
-                        "{}: {:#?}\n",
-                        String::from( event_name ),
-                        ON_EVENT_FUNCTIONS.lock().unwrap().get( event_name )
-                    );
+                    if cfg!( debug_assertions ) {
+                        println!(
+                            "{}: {:#?}\n",
+                            String::from( event_name ),
+                            ON_EVENT_FUNCTIONS.lock().unwrap().get( event_name )
+                        );
+                    }
                 }
             }
         }
@@ -357,14 +361,16 @@ unsafe fn load_addons_directory() {
         move || {
             for ( event_name, function_addresses ) in ON_EVENT_FUNCTIONS.lock().unwrap().iter() {
                 if event_name != "onInitialization" {
-                    println!(
-                        "{} : {} -> {:#02X?}",
-                        event_name,
-                        function_addresses
-                            .len(),
-                        function_addresses
-                            .to_owned()
-                    );
+                    if cfg!( debug_assertions ) {
+                        println!(
+                            "{} : {} -> {:#02X?}",
+                            event_name,
+                            function_addresses
+                                .len(),
+                            function_addresses
+                                .to_owned()
+                        );
+                    }
 
                     if let Some( on_event_function ) = on_event_functions.get( event_name ) {
                         on_event_function(
