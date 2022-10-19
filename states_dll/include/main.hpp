@@ -1,22 +1,16 @@
 #pragma once
 
-#ifdef __WIN32__
+#if defined( _WIN32 )
+
 #include <windows.h>
-#else
+
+#else // _WIN32
+
 #error Only Windows is supported
-#endif
 
-#include <string>
-
-typedef void modFunction_t( void );
+#endif // _WIN32
 
 extern size_t     onHostedFunctionCount;
 extern uintptr_t* onHostedfunctionAddresses;
 extern size_t     onConnectionFunctionCount;
 extern uintptr_t* onConnectionfunctionAddresses;
-
-struct struct0 {
-    int32_t port;
-    char    pad1[ 4 ];
-    int32_t f2;
-};

@@ -1,15 +1,15 @@
 [package]
-name = "just_another_modloader"
-version = "0.1.0"
-edition = "2021"
+name    = "just_another_modloader"
+version = "1.0.0"
+edition = "2022"
 
 [profile.release]
-strip = true
-lto = true
+strip         = true
+lto           = true
 codegen-units = 1
-incremental = true
-panic = "abort"
-opt-level = "z"
+incremental   = true
+panic         = "abort"
+opt-level     = "z"
 
 [lib]
 crate-type = [ "cdylib" ]
@@ -17,5 +17,5 @@ crate-type = [ "cdylib" ]
 [dependencies]
 deser-hjson = "*"
 lazy_static = "*"
-serde = "*"
-winapi = { version = "*", features = [ "consoleapi", "minwindef", "winuser", "windef", "libloaderapi" ] }
+serde       = "*"
+winapi      = { version = "*", features = [ "consoleapi", "minwindef", "winuser", "windef", "libloaderapi" ] }

@@ -1,19 +1,18 @@
-#ifdef __WIN32__
+#if defined( _WIN32 )
+
 #include <windows.h>
-#else
+
+#else // _WIN32
+
 #error Only Windows is supported
-#endif
+
+#endif // _WIN32
 
 #include <string>
 
 #include <mingw-std-threads/mingw.thread.h>
-#include <detours.h>
-#include <stdfunc.hpp>
+#include <stdfunc.h>
 #include <main.hpp>
-#include <original_functions.hpp>
-#include <hook_functions.hpp>
-
-void ( __cdecl* original::portFunction )( struct struct0* _argument ) = nullptr;
 
 size_t     onHostedFunctionCount;
 uintptr_t* onHostedfunctionAddresses;
@@ -26,7 +25,7 @@ void waitForWindow( uintptr_t _moduleAddress ) {
 
     do {
         try {
-            l_testAddress = read< uintptr_t >( _moduleAddress + l_magicAddress );
+            l_testAddress = (uintptr_t)read( _moduleAddress + l_magicAddress, true );
 
         } catch ( ... ) {
             l_testAddress = (uintptr_t)NULL;
@@ -53,6 +52,8 @@ void handleStates( void ) {
             l_consoleString.find( l_assetExtension ) + sizeof( l_assetExtension ) - 1
         );
 
+        print( l_consoleString.c_str(), l_consoleString.length() );
+
         // if ( l_consoleString == "" ) {
         // }
 
@@ -60,25 +61,38 @@ void handleStates( void ) {
     }
 }
 
-extern "C" void __declspec( dllexport ) onGameStarted( size_t _functionCount, uintptr_t* _functionAddresses ) {
+extern "C" void __declspec( dllexport ) onGameStarted(
+    size_t _functionCount,
+    uintptr_t* _functionAddresses
+) {
     const uintptr_t l_moduleAddress = getModule( "th155_beta.exe" );
 
     waitForWindow( l_moduleAddress );
 
-    for ( uint32_t _functionIndex = 0; _functionIndex < _functionCount; _functionIndex++ ) {
+    for (
+        uint32_t _functionIndex = 0;
+        _functionIndex < _functionCount;
+        _functionIndex++
+    ) {
         ( (modFunction_t*)_functionAddresses[ _functionIndex ] )();
     }
 
     handleStates();
 }
 
-extern "C" void __declspec( dllexport ) onHosted( size_t _functionCount, uintptr_t* _functionAddresses ) {
+extern "C" void __declspec( dllexport ) onHosted(
+    size_t _functionCount,
+    uintptr_t* _functionAddresses
+) {
     onHostedFunctionCount     = _functionCount;
     onHostedfunctionAddresses = _functionAddresses;
     const uintptr_t l_moduleAddress = getModule( "th155_beta.exe" );
 }
 
-extern "C" void __declspec( dllexport ) onConnection( size_t _functionCount, uintptr_t* _functionAddresses ) {
+extern "C" void __declspec( dllexport ) onConnection(
+    size_t _functionCount,
+    uintptr_t* _functionAddresses
+) {
     onConnectionFunctionCount     = _functionCount;
     onConnectionfunctionAddresses = _functionAddresses;
     const uintptr_t l_moduleAddress = getModule( "th155_beta.exe" );

@@ -3,11 +3,6 @@
 deprecated/
 *.bak
 *.txt
-addons/test/test.dll
-
-# Added by cargo
-#
-# already existing elements were commented out
-
+*.dll
 /target
 /Cargo.lock

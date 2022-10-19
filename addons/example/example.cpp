@@ -1,8 +1,12 @@
-#ifdef __WIN32__
+#if defined( _WIN32 )
+
 #include <windows.h>
-#else
+
+#else // _WIN32
+
 #error Only Windows is supported
-#endif
+
+#endif // _WIN32
 
 extern "C" void __declspec( dllexport ) onGameStarted( void ) {
     MessageBoxA(
