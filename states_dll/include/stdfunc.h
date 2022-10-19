@@ -15,6 +15,11 @@
 // #pragma comment (lib, "AdvApi32.lib")
 #include <tlhelp32.h>
 
+// Copyright (c) Microsoft Corporation. All rights reserved.
+
+// Licensed under the MIT License.
+#include <detours.h>
+
 #else // _WIN32
 
 #include <unistd.h>
@@ -24,7 +29,6 @@
 
 #include <stdint.h>
 #include <stdbool.h>
-#include <detours.h>
 
 #ifndef INT8_MIN
 

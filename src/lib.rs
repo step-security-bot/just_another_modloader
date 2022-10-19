@@ -1,10 +1,79 @@
 #![ cfg( windows ) ]
 
 use {
-    lazy_static::lazy_static,
+    // Copyright (c) 2020 Canop
 
+    // Permission is hereby granted, free of charge, to any person obtaining a copy
+    // of this software and associated documentation files (the "Software"), to deal
+    // in the Software without restriction, including without limitation the rights
+    // to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+    // copies of the Software, and to permit persons to whom the Software is
+    // furnished to do so, subject to the following conditions:
+
+    // The above copyright notice and this permission notice shall be included in all
+    // copies or substantial portions of the Software.
+
+    // THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+    // IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+    // FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+    // AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+    // LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+    // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+    // SOFTWARE.
     deser_hjson,
 
+    // Copyright (c) 2010 The Rust Project Developers
+
+    // Permission is hereby granted, free of charge, to any
+    // person obtaining a copy of this software and associated
+    // documentation files (the "Software"), to deal in the
+    // Software without restriction, including without
+    // limitation the rights to use, copy, modify, merge,
+    // publish, distribute, sublicense, and/or sell copies of
+    // the Software, and to permit persons to whom the Software
+    // is furnished to do so, subject to the following
+    // conditions:
+
+    // The above copyright notice and this permission notice
+    // shall be included in all copies or substantial portions
+    // of the Software.
+
+    // THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF
+    // ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED
+    // TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A
+    // PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT
+    // SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY
+    // CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
+    // OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR
+    // IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
+    // DEALINGS IN THE SOFTWARE.
+    lazy_static::lazy_static,
+
+    // Copyright (c) 2014 The Rust Project Developers
+
+    // Permission is hereby granted, free of charge, to any
+    // person obtaining a copy of this software and associated
+    // documentation files (the "Software"), to deal in the
+    // Software without restriction, including without
+    // limitation the rights to use, copy, modify, merge,
+    // publish, distribute, sublicense, and/or sell copies of
+    // the Software, and to permit persons to whom the Software
+    // is furnished to do so, subject to the following
+    // conditions:
+
+    // The above copyright notice and this permission notice
+    // shall be included in all copies or substantial portions
+    // of the Software.
+
+    // THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF
+    // ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED
+    // TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A
+    // PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT
+    // SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY
+    // CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
+    // OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR
+    // IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
+    // DEALINGS IN THE SOFTWARE.
     serde::Deserialize,
 
     std::{
@@ -23,6 +92,25 @@ use {
         },
     },
 
+    // Copyright (c) 2015-2018 The winapi-rs Developers
+
+    // Permission is hereby granted, free of charge, to any person obtaining a copy
+    // of this software and associated documentation files (the "Software"), to deal
+    // in the Software without restriction, including without limitation the rights
+    // to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+    // copies of the Software, and to permit persons to whom the Software is
+    // furnished to do so, subject to the following conditions:
+
+    // The above copyright notice and this permission notice shall be included in all
+    // copies or substantial portions of the Software.
+
+    // THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+    // IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+    // FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+    // AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+    // LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+    // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+    // SOFTWARE.
     winapi::{
         shared::{
             minwindef::{
@@ -97,14 +185,18 @@ pub unsafe extern fn thcrap_plugin_init() -> u32 {
 }
 
 unsafe fn init() {
+    // Allocate console, so the game will print out loaded assets.
     // if cfg!( debug_assertions ) {
         AllocConsole();
     // }
 
+    // Load DLLs from root directory.
     load_root_directory();
+    // Load addons.
     load_addons_directory();
 }
 
+// This function will be called when window appears.
 #[ no_mangle ]
 pub unsafe extern fn Initialize() {
     if cfg!( debug_assertions ) {
@@ -125,6 +217,7 @@ pub unsafe extern fn Initialize() {
         }
     }
 
+    // Call to the original Netplay.dll Initialize function.
     if NETPLAY_INITIALIZATION_ADDRESS != NULL as FARPROC {
         let netplay_initialization = v_address_to_function!(
             NETPLAY_INITIALIZATION_ADDRESS,
@@ -135,6 +228,7 @@ pub unsafe extern fn Initialize() {
     }
 }
 
+// Load DLLs from game root directory.
 unsafe fn load_root_directory() {
     let dll_paths: Vec< fs::DirEntry > = fs::read_dir( "./" )
         .unwrap()
@@ -151,7 +245,7 @@ unsafe fn load_root_directory() {
         )
         .filter(
             | path | {
-                // exclude mod loader dll
+                // Exclude wrapper.
                 if path.path().to_str().unwrap() == "./Netplay.dll" {
                     return false;
                 }
@@ -173,6 +267,7 @@ unsafe fn load_root_directory() {
                 );
             }
 
+            // Add function addresses which be called on game window show up.
             if NETPLAY_INITIALIZATION_ADDRESS == NULL as FARPROC {
                 NETPLAY_INITIALIZATION_ADDRESS = GetProcAddress(
                     LoadLibraryA(
@@ -192,6 +287,7 @@ unsafe fn load_root_directory() {
     );
 }
 
+// Load addons.
 unsafe fn load_addons_directory() {
     let addons_paths: Vec< fs::DirEntry > = match fs::read_dir( "addons" ) {
         Ok( directory ) => {
@@ -214,6 +310,7 @@ unsafe fn load_addons_directory() {
             )
             .collect()
         },
+        // If there is no addons folder.
         Err( error ) => {
             println!( "addon: {:?}", error );
 
@@ -230,6 +327,7 @@ unsafe fn load_addons_directory() {
                 );
             }
 
+            // Load mod information from info.hjson.
             let mod_info: ModInfo = deser_hjson::from_str(
                 &fs::read_to_string(
                     format!(
@@ -256,6 +354,7 @@ unsafe fn load_addons_directory() {
                 );
             }
 
+            // Load main DLL into the process.
             let mod_h_module: HMODULE = LoadLibraryA(
                 format!(
                     "{}\\{}\0",
@@ -269,6 +368,7 @@ unsafe fn load_addons_directory() {
                 String::from( "Not specified" )
             );
 
+            // Get specified to events function addresses.
             for ( event_name, event ) in mod_info.events.iter() {
                 if event != &not_specified {
                     let on_event_old_functions = ON_EVENT_FUNCTIONS.lock().unwrap().insert(
@@ -315,6 +415,7 @@ unsafe fn load_addons_directory() {
         }
     );
 
+    // Load event handling DLL into the game process.
     let states_h_module =  LoadLibraryA(
         format!(
             "states.dll\0",
@@ -324,6 +425,7 @@ unsafe fn load_addons_directory() {
 
     let mut on_event_functions: HashMap< String, extern "C" fn( usize, *const usize ) > = HashMap::new();
 
+    // Add onGameStarted event.
     on_event_functions.insert(
         String::from( "onGameStarted" ),
         v_address_to_function!(
@@ -335,6 +437,7 @@ unsafe fn load_addons_directory() {
         )
     );
 
+    // Add onHosted event.
     on_event_functions.insert(
         String::from( "onHosted" ),
         v_address_to_function!(
@@ -346,6 +449,7 @@ unsafe fn load_addons_directory() {
         )
     );
 
+    // Add onConnection event.
     on_event_functions.insert(
         String::from( "onConnection" ),
         v_address_to_function!(
@@ -357,6 +461,7 @@ unsafe fn load_addons_directory() {
         )
     );
 
+    // Load callbacks into the event handling DLL.
     thread::spawn(
         move || {
             for ( event_name, function_addresses ) in ON_EVENT_FUNCTIONS.lock().unwrap().iter() {
