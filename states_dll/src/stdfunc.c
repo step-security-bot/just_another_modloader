@@ -14,7 +14,7 @@
 /// @param[in] _boolean Boolean value to convert to string.
 /// @return Constant char pointer to text. <b>( "OK" or "Failed" )</b>
 ///////////////
-const char* const boolToString( bool _boolean ) const {
+const char* const boolToString( bool _boolean ) {
     //! <b>[return]</b>
     /// End of function.
     /// @code{.c}
@@ -31,8 +31,8 @@ const char* const boolToString( bool _boolean ) const {
 char* numberToHexString( int32_t _number ) {
     //! <b>[declare]</b>
     /// @code{.cpp}
-    const char l_hex[] = "0123456789ABCDEF";
-    char       l_convertedString[ HEX_LENGTH ];
+    const char l_hex[]           = "0123456789ABCDEF";
+    char*      l_convertedString = (char*)Malloc( HEX_LENGTH );
     /// @endcode
     //! <b>[declare]</b>
 
@@ -42,7 +42,7 @@ char* numberToHexString( int32_t _number ) {
     for (
         uint32_t _symbolIndex = 0;
         _symbolIndex < HEX_LENGTH;
-        _symbolIndex++;
+        _symbolIndex++
     ) {
         l_convertedString[ _symbolIndex ] = '0';
     }
@@ -199,7 +199,7 @@ static unsigned long g_seed = 1;
 /// @param[in] _text Pointer to text.
 /// @param[in] _lengthOfText Length of text.
 ///////////////
-void print( const char* _text, const uint32_t _lengthOfText ) const {
+void print( const char* _text, const uint32_t _lengthOfText ) {
     //! <b>[print]</b>
     /// Write text to console
     /// @code{.c}
@@ -458,7 +458,7 @@ uintptr_t getModule( const char* _moduleName ) {
 ///////////////
 void* read(
     const uintptr_t _address,
-    const bool _memoryCheck,
+    const bool _memoryCheck
 ) {
     if ( _memoryCheck ) {
         //! <b>[declare]</b>
@@ -581,7 +581,7 @@ uintptr_t getAddress(
         _offsetIndex < _offsetsCount;
         _offsetIndex++
     ) {
-        _moduleAddress = read< uintptr_t >( _moduleAddress, _memoryCheck );
+        _moduleAddress = (uintptr_t)read( _moduleAddress, _memoryCheck );
         _moduleAddress += (char)_offsets[ _offsetIndex ];
     }
     /// @endcode

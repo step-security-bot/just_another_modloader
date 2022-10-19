@@ -1,0 +1,6 @@
+[submodule "states_dll/include/mingw-std-threads"]
+	path = states_dll/include/mingw-std-threads
+	url = https://github.com/meganz/mingw-std-threads.git
+[submodule "states_dll/Detours"]
+	path = states_dll/Detours
+	url = https://github.com/microsoft/Detours.git

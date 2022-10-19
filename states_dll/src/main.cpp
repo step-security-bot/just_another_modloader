@@ -38,7 +38,9 @@ void waitForWindow( uintptr_t _moduleAddress ) {
 void handleStates( void ) {
     uintptr_t l_address = getAddress(
         getModule( "th155_beta.exe" ) + 0x004DA638,
-        { 0x0 }
+        { 0x0 },
+        1,
+        true
     );
 
     std::string l_consoleString;

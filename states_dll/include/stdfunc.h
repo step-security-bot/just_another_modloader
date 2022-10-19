@@ -61,7 +61,7 @@
 #define RemoveHook( _originalFunctionAddress, _hookFunctionAddress, _functionName )\
     RegisterHook( _originalFunctionAddress, _hookFunctionAddress, _functionName )
 
-const char* const boolToString( bool _boolean ) const;
+const char* const boolToString( bool _boolean );
 
 char* numberToHexString( int32_t _number );
 
@@ -75,7 +75,7 @@ uint_fast32_t lengthOfInt( long _number );
 
 uint_fast32_t lengthOfString( char* _string );
 
-void print( const char* _text, const uint32_t _lengthOfText ) const;
+void print( const char* _text, const uint32_t _lengthOfText );
 
 int Pow( int32_t _number, uint32_t _exp );
 

@@ -10,6 +10,8 @@
 
 #endif // _WIN32
 
+typedef void modFunction_t( void );
+
 extern size_t     onHostedFunctionCount;
 extern uintptr_t* onHostedfunctionAddresses;
 extern size_t     onConnectionFunctionCount;
