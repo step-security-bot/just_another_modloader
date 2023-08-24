@@ -1,6 +1,8 @@
 # just_another_modloader
 
-> Just another modloader for Touhou 15.5 without injector.
+[![Codacy Badge](https://app.codacy.com/project/badge/Grade/cbba48500c2e41b99c4ca35447e59d7c)](https://app.codacy.com/gh/lurkydismal/just_another_modloader/dashboard?utm_source=gh&utm_medium=referral&utm_content=&utm_campaign=Badge_grade)
+
+> Just another mod loader for Touhou 15.5 without injector.
 
 ## Table of Contents
 
@@ -34,16 +36,20 @@
 
 ## Setup
 
-> Upgrade depencies by running  
-`git init`  
-`git submodule foreach git pull origin master`  
-install i686 mingw and use **build_*.sh** to build binaries.
+* > Upgrade dependencies by running
+  - > ``` console
+    > git init
+    > ```
+  - > ``` console
+    > git submodule update --init --recursive
+    > ```
+* > Install i686 mingw and use **build_*.sh** to build binaries.
 
 ## Usage
 
-Drop both **Netplay.dll** and **states.dll** into game root directory.  
-Create **addons** folder in game root directory.  
-Drop addons into **addonds** directory.
+* > Drop both **Netplay.dll** and **states.dll** into the game root directory.
+* > Create **addons** folder in the game root directory.
+* > Drop addons into the **addons** directory.
 
 ## Project Status
 
@@ -53,11 +59,11 @@ Project is: _in progress_.
 
 Room for improvement:
 
-* Improve code quality.
+* ¯\\\_\(ツ\)\_/¯
 
 To do:
 
-* Refresh addons in-game.
+* Reload addons in-game.
 * Addons updater.
 
 ## Acknowledgements
