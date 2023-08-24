@@ -1,18 +1,19 @@
 ///////////////
 /// @file stdfunc.c
-/// @brief Definition of many useful functions related to replace standart if needed.
+/// @brief Definition of many useful functions related to replace standard if needed.
 ///////////////
-#include <stdfunc.h>
+#ifndef _WIN32
 
-///////////////
-/// @brief Hex length for type \c int32.
-///////////////
-#define HEX_LENGTH ( sizeof( int32_t ) << 1 )
+#include <stdio.h>
+
+#endif // _WIN32
+
+#include <stdfunc.h>
 
 ///////////////
 /// @brief Inline function that converts \c bool to string.
 /// @param[in] _boolean Boolean value to convert to string.
-/// @return Constant char pointer to text. <b>( "OK" or "Failed" )</b>
+/// @return Char pointer to text. <b>( OK || Failed )</b>
 ///////////////
 const char* const boolToString( bool _boolean ) {
     //! <b>[return]</b>
@@ -71,60 +72,6 @@ char* numberToHexString( int32_t _number ) {
 }
 
 ///////////////
-/// @brief Function that pop out element of array.
-/// @details Can pop out element of any type, but array should be of the same type. Pop out first element with needed value.
-/// @param[in] _array Elements array to pop from.
-/// @param[in] _lengthOfArray Array length.
-/// @param[in] _elementToPop Element to pop.
-/// @result Array without popped element.
-///////////////
-uint32_t* pop( uint32_t* _array, uint32_t _lengthOfArray, const uint32_t _elementToPop ) {
-    //! <b>[for_each]</b>
-    /// For each element of _array as index.
-    /// @code{.c}
-    for ( uint32_t _elementOfArray = 0; _elementOfArray < _lengthOfArray; _elementOfArray++ ) {
-    /// @endcode
-        //! <b>[compare]</b>
-        /// Comparison each element of _array to needed value.
-        /// @code{.c}
-        if ( _array[ _elementOfArray ] == _elementToPop ) {
-        /// @endcode
-            //! <b>[pop]</b>
-            /// Moving values from next index to current.
-            /// @code{.c}
-            while ( _elementOfArray < ( _lengthOfArray - 1 ) ) {
-                _array[ _elementOfArray ] = _array[ _elementOfArray + 1 ];
-
-                _elementOfArray++;
-            }
-            /// @endcode
-
-            /// Replace the last element of _array with NULL value.
-            /// @code{.c}
-            _array[ _elementOfArray ] = (uint32_t)NULL;
-            /// @endcode
-            //! <b>[pop]</b>
-
-            //! <b>[explicit]</b>
-            /// Explicit end of loop.
-            /// @code{.c}
-            break;
-            /// @endcode
-            //! <b>[explicit]</b>
-        }
-        //! <b>[compare]</b>
-    }
-    //! <b>[for_each]</b>
-
-    //! <b>[return]</b>
-    /// End of function.
-    /// @code{.c}
-    return ( _array );
-    /// @endcode
-    //! <b>[return]</b>
-}
-
-///////////////
 /// @brief Function that find length of an integer number.
 /// @details Can get length of negative and positive number.
 /// @param[in] _number Number to get length from.
@@ -161,7 +108,7 @@ uint_fast32_t lengthOfInt( long _number ) {
 /// @param[in] _string String pointer to get length from.
 /// @return String length.
 ///////////////
-uint_fast32_t lengthOfString( char* _string ) {
+uint_fast32_t lengthOfCString( char* _string ) {
     //! <b>[declare]</b>
     /// Last symbol from _string.
     /// @code{.c}
@@ -204,7 +151,7 @@ void print( const char* _text, const uint32_t _lengthOfText ) {
     /// Write text to console
     /// @code{.c}
 
-#if defined( _WIN32 )
+#ifdef _WIN32
 
     WriteConsoleA(
         GetStdHandle( STD_OUTPUT_HANDLE ), // Console handle
@@ -227,41 +174,15 @@ void print( const char* _text, const uint32_t _lengthOfText ) {
 }
 
 ///////////////
-/// @brief Function that exponentiation integer number.
-/// @details Recursive function.
-/// @param[in] _number Number to power.
-/// @param[in] _exp Exponentiation value.
-/// @return Exponentiation of number.
-///////////////
-int32_t Pow( int32_t _number, uint32_t _exp ) {
-    if ( _exp == 1 ) {
-        //! <b>[return]</b>
-        /// End of function.
-        /// @code{.c}
-        return (1);
-        /// @endcode
-        //! <b>[return]</b>
-
-    } else {
-        //! <b>[return]</b>
-        /// Recursive multiply.
-        /// @code{.c}
-        return ( _number * Pow( _number, _exp-- ) );
-        /// @endcode
-        //! <b>[return]</b>
-    }
-}
-
-///////////////
 /// @brief Function that generate random number from the \c seed.
 /// @details Use \c SRand() to set the seed.
 /// @return Generated random number.
 ///////////////
-uint32_t Rand( void ) {
+unsigned long Rand( void ) {
     //! <b>[random]</b>
     /// Generating random number from the \c seed.
     /// @code{.c}
-    g_seed = g_seed * (int32_t)16807 % (uint32_t)0x7fffffff;
+    g_seed = ( g_seed * (unsigned long)16807 % (unsigned long)0x7fffffff );
     /// @endcode
     //! <b>[random]</b>
 
@@ -291,7 +212,7 @@ void SRand( unsigned long l_seed ) {
 ///////////////
 void clearConsole( void ) {
 
-#if defined( _WIN32 )
+#ifdef _WIN32
 
     //! <b>[declare]</b>
     /// Getting and declaring coordinates and console handle where to write.
@@ -308,11 +229,7 @@ void clearConsole( void ) {
     //! <b>[length]</b>
     /// Getting length of console.
     /// @code{.c}
-    GetConsoleScreenBufferInfo(
-        l_consoleHandle,
-        &l_consoleScreenInfo
-    );
-
+    GetConsoleScreenBufferInfo( l_consoleHandle, &l_consoleScreenInfo );
     DWORD l_numberOfWrittenCharacters, l_lengthOfText = l_consoleScreenInfo.dwSize.X * l_consoleScreenInfo.dwSize.Y;
     /// @endcode
     //! <b>[length]</b>
@@ -320,30 +237,15 @@ void clearConsole( void ) {
     //! <b>[print]</b>
     /// Write empty text to console.
     /// @code{.c}
-    FillConsoleOutputCharacter(
-        l_consoleHandle,
-        ' ',
-        l_lengthOfText,
-        l_topLeft,
-        &l_numberOfWrittenCharacters
-    );
-    FillConsoleOutputAttribute(
-        l_consoleHandle,
-        l_consoleScreenInfo.wAttributes,
-        l_lengthOfText,
-        l_topLeft,
-        &l_numberOfWrittenCharacters
-    );
+    FillConsoleOutputCharacter( l_consoleHandle, ' ', l_lengthOfText, l_topLeft, &l_numberOfWrittenCharacters );
+    FillConsoleOutputAttribute( l_consoleHandle, l_consoleScreenInfo.wAttributes, l_lengthOfText, l_topLeft, &l_numberOfWrittenCharacters );
     /// @endcode
     //! <b>[print]</b>
 
     //! <b>[reset]</b>
     /// Reset cursor position in console.
     /// @code{.c}
-    SetConsoleCursorPosition(
-        l_consoleHandle,
-        l_topLeft
-    );
+    SetConsoleCursorPosition( l_consoleHandle, l_topLeft );
     /// @endcode
     //! <b>[reset]</b>
 
@@ -357,52 +259,6 @@ void clearConsole( void ) {
 
 #endif // _WIN32
 
-}
-
-///////////////
-/// @brief Function that find duplicate number in integer array.
-/// @details Robert W. Floyd's tortoise and hare algorithm moves two pointers at different speeds through the sequence of values until they both point to equal values.
-/// @param[in] _numbers Array of integer values.
-/// @param[in] _lengthOfArray Array length.
-/// @return Duplicate number or first number in array, if there is no duplicate.
-///////////////
-int32_t findDuplicate( int32_t* _numbers, uint32_t _lengthOfArray ) {
-    //! <b>[declare]</b>
-    /// Two variables that contains first element of array
-    /// @code{.c}
-    int32_t l_tortoise = _numbers[ 0 ];
-    int32_t l_hare     = _numbers[ 0 ];
-    /// @endcode
-    //! <b>[declare]</b>
-
-    //! <b>[intersection]</b>
-    /// Find the intersection point of the two runners.
-    /// @code{.c}
-    do {
-        l_tortoise = _numbers[ l_tortoise ];
-        l_hare     = _numbers[ _numbers[ l_hare ] ];
-    } while ( l_tortoise != l_hare );
-    /// @endcode
-    //! <b>[intersection]</b>
-
-    //! <b>[entrance]</b>
-    /// Find the "entrance" to the cycle.
-    /// @code{.c}
-    l_tortoise = _numbers[ 0 ];
-
-    while ( l_tortoise != l_hare ) {
-        l_tortoise = _numbers[ l_tortoise ];
-        l_hare     = _numbers[ l_hare ];
-    }
-    /// @endcode
-    //! <b>[entrance]</b>
-
-    //! <b>[return]</b>
-    /// Parentheses with whitespaces means what we could change the return value in the asked place without pitfalls.
-    /// @code{.c}
-    return ( l_hare );
-    /// @endcode
-    //! <b>[return]</b>
 }
 
 #if defined( _WIN32 )

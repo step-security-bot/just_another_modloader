@@ -1,12 +1,14 @@
-///////////////
-/// @file stdfunc.h
-/// @brief Declarations of many useful functions and lambdas related to replace standart if needed.
-///////////////
 #ifndef _STDFUNC_H
 
 #define _STDFUNC_H
 
-#if defined( _WIN32 )
+///////////////
+/// @file stdfunc.h
+/// @brief Declarations of many useful functions and lambdas related to replace standard if needed.
+///////////////
+#pragma once
+
+#ifdef _WIN32
 
 #include <windows.h>
 // #pragma comment( lib, "user32" )
@@ -20,7 +22,7 @@
 // Licensed under the MIT License.
 #include <detours.h>
 
-#else // _WIN32
+#else
 
 #include <unistd.h>
 #include <stdio.h>
@@ -42,6 +44,16 @@
 #define Pass (void*)0
 
 ///////////////
+/// @brief How much memory to allocate.
+///////////////
+#define HEAP_MEMORY_SIZE 150
+
+///////////////
+/// @brief Hex length.
+///////////////
+#define HEX_LENGTH ( sizeof( int32_t ) << 1 )
+
+///////////////
 /// @brief Detouring macro simplified.
 ///////////////
 #define RegisterHook( _originalFunctionAddress, _hookFunctionAddress, _functionName )\
@@ -60,48 +72,36 @@
     ) );
 
 ///////////////
-/// @brief Undetouring macro simplified.
+/// @brief Un-detouring macro simplified.
 ///////////////
 #define RemoveHook( _originalFunctionAddress, _hookFunctionAddress, _functionName )\
     RegisterHook( _originalFunctionAddress, _hookFunctionAddress, _functionName )
+
+#if defined( __cplusplus )
+
+extern "C" {
+
+#endif // __cplusplus
 
 const char* const boolToString( bool _boolean );
 
 char* numberToHexString( int32_t _number );
 
-uint32_t* pop(
-    uint32_t* _array,
-    uint32_t _lengthOfArray,
-    const uint32_t _elementToPop
-);
-
 uint_fast32_t lengthOfInt( long _number );
 
-uint_fast32_t lengthOfString( char* _string );
+uint_fast32_t lengthOfCString( char* _string );
 
 void print( const char* _text, const uint32_t _lengthOfText );
 
-int Pow( int32_t _number, uint32_t _exp );
-
-uint32_t Rand( void );
+unsigned long Rand( void );
 
 void SRand( unsigned long _seed );
 
 void clearConsole( void );
 
-void* Malloc( uint32_t _numberOfBytes );
+void Memcpy( void* _destination, const void* _source, size_t _numberOfBytes );
 
-void Free( void* _firstbyte );
-
-void Memcpy(
-    void* _destination,
-    const void* _source,
-    size_t _numberOfBytes
-);
-
-char* Ltoa( long _number, char* _cString );
-
-int32_t findDuplicate( int32_t* _numbers, uint32_t _lengthOfArray );
+char* Ltoa( unsigned long _number, char* _cString );
 
 uintptr_t getModule( const char* _moduleName );
 
@@ -116,5 +116,11 @@ uintptr_t getAddress(
     uint32_t _offsetsCount,
     const bool _memoryCheck
 );
+
+#if defined( __cplusplus )
+
+}
+
+#endif // __cplusplus
 
 #endif // _STDFUNC_H

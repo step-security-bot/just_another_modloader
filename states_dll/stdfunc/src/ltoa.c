@@ -20,7 +20,7 @@ void Memcpy( void* _destination, const void* _source, size_t _numberOfBytes )  {
     //! <b>[typecast]</b>
     /// Typecast _source and _destination addresses to <tt>(char*)</tt>.
     /// @code{.c}
-    char* l_cSource      = (char*)_source;
+    const char* l_cSource      = (const char*)_source;
     char* l_cDestination = (char*)_destination;
     /// @endcode
     //! <b>[typecast]</b>
@@ -42,7 +42,7 @@ void Memcpy( void* _destination, const void* _source, size_t _numberOfBytes )  {
 /// @param[in] _cString Buffer in which to build the converted string.
 /// @return A character pointer to the converted string if successful, a NULL pointer if the number base specified is out of range.
 ///////////////
-char* Ltoa( long _number, char* _cString ) {
+char* Ltoa( unsigned long _number, char* _cString ) {
     //! <b>[declare]</b>
     /// Declare l_characterIndex to register, pointer to cString and buffer with converted string.
     /// @code{.c}
@@ -52,7 +52,7 @@ char* Ltoa( long _number, char* _cString ) {
 
     /// Set the last character of string to NULL terminator.
     /// @code{.c}
-    l_tail    = &l_buf[ BUFSIZE - 1 ];       // last character position
+    l_tail    = &( l_buf[ BUFSIZE - 1 ] );       // last character position
     *l_tail-- = '\0';
     /// @endcode
     //! <b>[declare]</b>
@@ -60,19 +60,15 @@ char* Ltoa( long _number, char* _cString ) {
     //! <b>[convert]</b>
     /// Convert integer value to string value.
     /// @code{.c}
-    for ( l_characterIndex = 1; _number; ++l_characterIndex ) {
-        *l_tail-- = (char)(
-            ( _number % 10 ) + ( (
-                9L < ( _number % 10 )        // if decimal is not NULL
-            ) ? (
-                'A' - 10L
-            ) : (
-                '0'
-            ) )
-        );
+    l_characterIndex = 1;
+
+    do {
+        ++l_characterIndex;
+
+        *l_tail-- = (char)( ( _number % 10 ) + '0' );
 
         _number /= 10;
-    }
+    } while ( _number != 0 );
     /// @endcode
     //! <b>[convert]</b>
 
