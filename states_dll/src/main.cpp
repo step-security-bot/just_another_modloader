@@ -38,10 +38,10 @@
 #include <stdfunc.h>
 #include <main.hpp>
 
-size_t     onHostedFunctionCount;
-uintptr_t* onHostedfunctionAddresses;
-size_t     onConnectionFunctionCount;
-uintptr_t* onConnectionfunctionAddresses;
+size_t     g_onHostedFunctionCount;
+uintptr_t* g_onHostedfunctionAddresses;
+size_t     g_onConnectionFunctionCount;
+uintptr_t* g_onConnectionfunctionAddresses;
 
 void waitForWindow( uintptr_t _moduleAddress ) {
     const uintptr_t l_magicAddress = 0x0049AFC8;
@@ -110,8 +110,8 @@ extern "C" void __declspec( dllexport ) onHosted(
     size_t _functionCount,
     uintptr_t* _functionAddresses
 ) {
-    onHostedFunctionCount     = _functionCount;
-    onHostedfunctionAddresses = _functionAddresses;
+    g_onHostedFunctionCount     = _functionCount;
+    g_onHostedfunctionAddresses = _functionAddresses;
     const uintptr_t l_moduleAddress = getModule( "th155_beta.exe" );
 }
 
@@ -119,7 +119,7 @@ extern "C" void __declspec( dllexport ) onConnection(
     size_t _functionCount,
     uintptr_t* _functionAddresses
 ) {
-    onConnectionFunctionCount     = _functionCount;
-    onConnectionfunctionAddresses = _functionAddresses;
+    g_onConnectionFunctionCount     = _functionCount;
+    g_onConnectionfunctionAddresses = _functionAddresses;
     const uintptr_t l_moduleAddress = getModule( "th155_beta.exe" );
 }
